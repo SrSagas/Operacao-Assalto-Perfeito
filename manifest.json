@@ -1,0 +1,21 @@
+{
+  "name": "Operação: O Assalto Perfeito",
+  "short_name": "Assalto Perfeito",
+  "description": "O dossiê ultrassecreto do maior assalto da história: o roubo de dois corações.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "icons": [
+    {
+      "src": "assets/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

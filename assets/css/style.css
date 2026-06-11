@@ -7,6 +7,12 @@
     --gray-text: #B0B0B0;
     --font-sans: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+    
+    /* Mapeamento de áreas seguras do Android/iOS adicionado */
+    --safe-top: env(safe-area-inset-top, 20px);
+    --safe-bottom: env(safe-area-inset-bottom, 20px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -454,4 +460,161 @@ audio { width: 100%; height: 5vh; outline: none; }
     .map-animation { flex-direction: column; gap: 2vh; }
     .route-line { width: 2px; height: 10vh; margin: 2vh auto; border-top: none; border-left: 2px dashed var(--gray-text); flex: none;}
     .moving-dot { left: -6px; top: 0; animation: moveDotVert 3s ease-in-out infinite alternate; }
+}
+
+/* ==========================================================================
+   PATCH DE RESPONSIVIDADE EXTREMA (MOBILE FIRST)
+   Resolvendo transbordamentos, sobreposições e safe-areas
+   ========================================================================== */
+
+/* 1. Reset Global e Prevenção de Overflow */
+*, *::before, *::after {
+    box-sizing: border-box !important;
+    max-width: 100%; /* Nada ultrapassa seu pai */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important; /* Bloqueio absoluto de scroll horizontal */
+    margin: 0;
+    padding: 0;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    /* Proteção contra barras de sistema (Notches, Status e Navigation Bars) */
+    padding-top: var(--safe-top);
+    padding-bottom: calc(var(--safe-bottom) + 60px); /* Espaço extra para o HUD e botões do Android */
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+}
+
+/* 2. Containers e Alinhamentos */
+.container {
+    width: 100%;
+    padding: 1rem 1.5rem; /* Padding seguro lateral em rem */
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 3. Correção de Imagens e Mascaras */
+img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+/* 4. Tipografia Dinâmica (Adequação fluida de telas pequenas 360px a grandes) */
+.title-main {
+    font-size: clamp(1.8rem, 6vw, 3.5rem);
+    line-height: 1.1;
+}
+
+.section-title {
+    font-size: clamp(1.4rem, 5vw, 2.5rem);
+    text-align: center;
+    width: 100%;
+}
+
+.professor-message, .terminal-body p, .dramatic-text, .narrative-block p {
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
+    line-height: 1.6;
+    width: 100%;
+}
+
+/* 5. Correção de Grids, Cards e Tabelas (Dossiê, Briefing, Stats) */
+.dossier-grid, .stats-grid, .briefing-body, #gallery-grid, .mission-list {
+    display: grid;
+    /* Auto-fit cria colunas apenas se houver espaço, minmax evita transbordamento */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.2rem;
+    width: 100%;
+    padding: 0;
+}
+
+/* Força empilhamento seguro em telas menores que 380px */
+@media (max-width: 400px) {
+    .dossier-grid, .stats-grid, .briefing-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+.dossier-card, .briefing-card, .stat-box {
+    width: 100%;
+    padding: 1.2rem;
+    border-radius: 8px;
+    /* Evita que o card saia da tela ao usar padding */
+    box-sizing: border-box; 
+}
+
+/* 6. Correção do Terminal e Caixas de Código */
+.terminal-window {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto; /* Permite scroll interno SOMENTE no terminal, salvando o layout principal */
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+/* 7. Linha do Tempo (Cronologia) - Evitando vazamento de bordas e pontos */
+.timeline {
+    width: 100%;
+    padding: 0 0 0 1rem; /* Recuo à esquerda para a linha */
+    display: flex;
+    flex-direction: column;
+}
+
+.timeline-item {
+    width: 100%;
+    position: relative;
+    padding-left: 2rem; /* Espaço para o ponto (.dot) */
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 8. Animação de Mapa e Elementos Visuais (Operação Distância) */
+.map-animation {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden; /* Evita que o .moving-dot crie scroll lateral */
+}
+
+/* 9. Botões e Call to Actions */
+button, .premium-btn, #gui-controls {
+    max-width: 100%;
+    white-space: normal; /* Permite que o texto do botão quebre linha se a tela for minúscula */
+    text-align: center;
+}
+
+/* 10. HUD Overlays (Posições fixas contidas) */
+.global-scanlines, .global-noise, #particles-bg {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0; 
+    left: 0;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden; /* Previne que o efeito gere scroll */
+}
+
+/* HUD Corners - Ajustando para não escapar da tela por 1px */
+.hud-corners {
+    width: calc(100% - 20px);
+    height: calc(100% - 20px);
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    pointer-events: none;
 }

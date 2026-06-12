@@ -52,6 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (deltaY < -50) navigateToSection(currentSectionIndex - 1);
     }, { passive: true });
 
+    // Variável global para limpar listeners de desbloqueio de áudio
+    let audioUnlockHandler = null;
+
     // 2. GATILHOS DE ANIMAÇÃO POR SEÇÃO
     function triggerSectionEvents(section) {
         if (window.audioDelayTimeout) {
@@ -59,70 +62,223 @@ document.addEventListener('DOMContentLoaded', () => {
             window.audioDelayTimeout = null;
         }
 
-        // Tocar Áudio Global se houver placeholder
-        const audioData = section.querySelector('.audio-sync-placeholder');
-        if (audioData && audioData.dataset.audio) {
-            const delay = audioData.dataset.delay ? parseInt(audioData.dataset.delay) : 0;
-            const playAudio = () => {
-                globalAudioPlayer.src = `assets/audio/${audioData.dataset.audio}`;
-                globalAudioPlayer.play().catch(() => console.warn("Interação de áudio bloqueada pelo navegador."));
-            };
-            if (delay > 0) {
-                window.audioDelayTimeout = setTimeout(playAudio, delay);
-            } else {
-                playAudio();
-            }
-        } else {
-            globalAudioPlayer.pause();
+        if (audioUnlockHandler) {
+            document.removeEventListener('click', audioUnlockHandler);
+            document.removeEventListener('touchstart', audioUnlockHandler);
+            audioUnlockHandler = null;
         }
 
-        // Máquina de Escrever Segura (Utilizando textContent e validação de estado)
+        // Prepara Máquina de Escrever
         const typeTargets = section.querySelectorAll('.type-target, .type-target-final');
         typeTargets.forEach(target => {
-            if (target.dataset.typed === "true") return; // Impede reexecução
-            
-            const textToType = target.dataset.originalText || target.textContent.trim();
-            if (!target.dataset.originalText) target.dataset.originalText = textToType;
-            
+            if (!target.dataset.originalText) {
+                target.dataset.originalText = target.textContent.trim();
+            }
             target.textContent = ""; 
-            target.dataset.typed = "true";
-            
-            let i = 0;
-            const typingInterval = setInterval(() => {
-                if (i < textToType.length) {
-                    target.textContent += textToType.charAt(i);
-                    i++;
-                } else {
-                    clearInterval(typingInterval);
-                }
-            }, 30);
+            if (target.typingInterval) clearInterval(target.typingInterval);
+            if (target.syncId) {
+                cancelAnimationFrame(target.syncId);
+                target.syncId = null;
+            }
         });
 
-        // Revelação de Elementos (Sec 5, Sec 3, etc)
-        const reveals = section.querySelectorAll('[class*="reveal-"], [class*="seq-"], .timeline-item, .dossier-card, .briefing-card');
+        const startTypingAll = (hasAudio) => {
+            typeTargets.forEach(target => {
+                const textToType = target.dataset.originalText;
+                if (!textToType) return;
+                
+                target.textContent = "";
+
+                if (hasAudio) {
+                    // Sincronização matemática perfeita frame a frame via currentTime do áudio
+                    const syncFrame = () => {
+                        // Aborta caso a animação tenha sido limpa ao trocar de seção
+                        if (target.syncId === null) return;
+
+                        if (globalAudioPlayer.duration > 0) {
+                            const progress = globalAudioPlayer.currentTime / globalAudioPlayer.duration;
+                            const charsToShow = Math.min(
+                                textToType.length,
+                                Math.floor(progress * textToType.length)
+                            );
+                            
+                            target.textContent = textToType.substring(0, charsToShow);
+
+                            // Continua sincronizando enquanto não acabar
+                            if (progress < 1 && !globalAudioPlayer.ended) {
+                                target.syncId = requestAnimationFrame(syncFrame);
+                            } else {
+                                target.textContent = textToType; // Garante término de 100%
+                                target.syncId = null;
+                            }
+                        } else {
+                            target.syncId = requestAnimationFrame(syncFrame);
+                        }
+                    };
+                    target.syncId = requestAnimationFrame(syncFrame);
+                } else {
+                    // Velocidade padrão se não houver áudio acoplado
+                    let i = 0;
+                    target.typingInterval = setInterval(() => {
+                        if (i < textToType.length) {
+                            target.textContent += textToType.charAt(i);
+                            i++;
+                        } else {
+                            clearInterval(target.typingInterval);
+                        }
+                    }, 30);
+                }
+            });
+        };
+
+        // Prepara Elementos Sequenciais (Sec 3, 4, 5, 10, etc)
+        const reveals = Array.from(section.querySelectorAll('[class*="reveal-"], [class*="seq-"], .timeline-item, .dossier-card, .briefing-card'));
         reveals.forEach(el => {
             el.classList.remove('anim-active');
             const content = el.querySelector('.content');
             if (content) content.classList.remove('shake-now');
         });
-        
-        let accumulatedDelay = 0;
-        reveals.forEach((el, index) => {
-            const currentDelay = ((index + 1) * 1800) + accumulatedDelay;
-            
-            setTimeout(() => { 
-                el.classList.add('anim-active'); 
-                if (el.classList.contains('timeline-failed')) {
-                    const content = el.querySelector('.content');
-                    if (content) content.classList.add('shake-now');
-                }
-            }, currentDelay);
 
-            // Atraso dramático para o próximo elemento se a missão atual falhou
-            if (el.classList.contains('timeline-failed')) {
-                accumulatedDelay += 1500; 
+        const startRevealsAll = (hasAudio) => {
+            if (reveals.length === 0) return;
+
+            if (hasAudio) {
+                const syncReveals = () => {
+                    // Aborta caso a seção tenha sido trocada
+                    if (!section.classList.contains('active')) return;
+
+                    if (globalAudioPlayer.duration > 0) {
+                        const progress = globalAudioPlayer.currentTime / globalAudioPlayer.duration;
+                        const step = 1 / reveals.length;
+
+                        reveals.forEach((el, index) => {
+                            let threshold = index * step;
+                            
+                            // Controle refinado de ritmo para a Sec-5 (O PLOT TWIST)
+                            if (section.id === 'sec-5') {
+                                if (index <= 3) {
+                                    // Acelerador de 1.3x para os elementos iniciais
+                                    threshold = threshold / 1.3;
+                                } else if (index === 4) {
+                                    // Engate direto: 0.3s após o "O PRIMEIRO BEIJO" (index 3)
+                                    const thresholdIdx3 = (3 * step) / 1.3;
+                                    const pauseInFraction = 0.3 / globalAudioPlayer.duration;
+                                    threshold = thresholdIdx3 + pauseInFraction;
+                                }
+                            }
+                            
+                            // Antecipação de 5 segundos para o último texto da Sec-10 (FILOSOFIA BERLIM)
+                            if (section.id === 'sec-10' && index === 2) {
+                                const advanceInFraction = 5 / globalAudioPlayer.duration;
+                                threshold = Math.max(0, threshold - advanceInFraction);
+                            }
+                            
+                            if (progress >= threshold) {
+                                if (!el.classList.contains('anim-active')) {
+                                    el.classList.add('anim-active');
+                                    if (el.classList.contains('timeline-failed')) {
+                                        const content = el.querySelector('.content');
+                                        if (content) content.classList.add('shake-now');
+                                    }
+                                }
+                            } else {
+                                el.classList.remove('anim-active'); // Em caso de retrocesso no áudio
+                            }
+                        });
+
+                        if (progress < 1 && !globalAudioPlayer.ended) {
+                            requestAnimationFrame(syncReveals);
+                        } else {
+                            reveals.forEach(el => el.classList.add('anim-active'));
+                        }
+                    } else {
+                        requestAnimationFrame(syncReveals);
+                    }
+                };
+                requestAnimationFrame(syncReveals);
+            } else {
+                let accumulatedDelay = 0;
+                reveals.forEach((el, index) => {
+                    const currentDelay = ((index + 1) * 1800) + accumulatedDelay;
+                    setTimeout(() => { 
+                        if (!section.classList.contains('active')) return;
+                        el.classList.add('anim-active'); 
+                        if (el.classList.contains('timeline-failed')) {
+                            const content = el.querySelector('.content');
+                            if (content) content.classList.add('shake-now');
+                        }
+                    }, currentDelay);
+                    if (el.classList.contains('timeline-failed')) {
+                        accumulatedDelay += 1500; 
+                    }
+                });
             }
-        });
+        };
+
+        // Lógica de Áudio e Sincronização Assíncrona Unificada
+        const audioData = section.querySelector('.audio-sync-placeholder');
+        if (audioData && audioData.dataset.audio) {
+            const delay = audioData.dataset.delay ? parseInt(audioData.dataset.delay) : 0;
+            
+            const initAudioAndSync = () => {
+                globalAudioPlayer.src = `assets/audio/${audioData.dataset.audio}`;
+                
+                const handleMetadata = () => {
+                    const playPromise = globalAudioPlayer.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            // Áudio tocou com sucesso, inicia sincronizações perfeitamente amarradas
+                            startTypingAll(true);
+                            startRevealsAll(true);
+                        }).catch((error) => {
+                            console.warn("Autoplay bloqueado. Exigindo interação para sincronizar texto e áudio.", error);
+                            
+                            const hint = document.querySelector('.scroll-hint');
+                            const originalHint = hint ? hint.textContent : "ARRASTE PARA EXPLORAR";
+                            if (hint) hint.textContent = "TOQUE NA TELA PARA OUVIR E CONTINUAR";
+
+                            audioUnlockHandler = () => {
+                                globalAudioPlayer.play().then(() => {
+                                    if (hint) hint.textContent = originalHint;
+                                    startTypingAll(true);
+                                    startRevealsAll(true);
+                                }).catch(e => {
+                                    console.error("Áudio forçado falhou", e);
+                                    startTypingAll(false);
+                                    startRevealsAll(false);
+                                });
+                                
+                                document.removeEventListener('click', audioUnlockHandler);
+                                document.removeEventListener('touchstart', audioUnlockHandler);
+                                audioUnlockHandler = null;
+                            };
+                            
+                            document.addEventListener('click', audioUnlockHandler, { once: true });
+                            document.addEventListener('touchstart', audioUnlockHandler, { once: true });
+                        });
+                    }
+                };
+
+                globalAudioPlayer.onloadedmetadata = handleMetadata;
+                
+                // Disparo imediato caso o áudio já esteja no cache (evita hang)
+                if (globalAudioPlayer.readyState >= 1) {
+                    globalAudioPlayer.onloadedmetadata = null;
+                    handleMetadata();
+                }
+            };
+
+            if (delay > 0) {
+                window.audioDelayTimeout = setTimeout(initAudioAndSync, delay);
+            } else {
+                initAudioAndSync();
+            }
+        } else {
+            globalAudioPlayer.pause();
+            // Fallback assíncrono para seções sem áudio
+            startTypingAll(false);
+            startRevealsAll(false);
+        }
     }
 
     // 3. GALERIA SEGURA E MODAL (Com limite rígido de carregamento)
@@ -150,6 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
             imgEl.className = 'gallery-item';
             if (imgSrc === 'ev2.jpg') {
                 imgEl.classList.add('horizontal');
+                wrapper.classList.add('horizontal-wrapper');
             }
             
             // Tratamento de erro silencioso para imagens ausentes
@@ -262,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 5. CÁLCULO DE TEMPO DA OPERAÇÃO (ESTATÍSTICAS)
     // Defina a data de início do relacionamento (Ano-Mês-Dia)
-    const startDate = new Date('2023-01-01T00:00:00'); // ATENÇÃO: Substitua pela data real
+    const startDate = new Date('2025-08-01T00:00:00'); // Data atualizada conforme solicitação
 
     function updateCounters() {
         const now = new Date();
@@ -396,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             hackingContainer.style.display = 'none';
-            mainTitleContainer.style.display = 'block';
+            mainTitleContainer.style.display = 'flex';
             
             // Pequeno delay para garantir que o CSS aplique a transição
             setTimeout(() => {

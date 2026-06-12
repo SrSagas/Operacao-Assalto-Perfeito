@@ -1,3 +1,12 @@
+    // Motor Matemático de Área Útil (Responsividade Absoluta)
+    function updateRealViewport() {
+        // 1vh = 1% da altura interna absoluta da janela visível (descontando navbars mobile)
+        let vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    // Calcular na largada
+    updateRealViewport();
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. GERENCIAMENTO DE ESTADO E NAVEGAÇÃO
     const sections = document.querySelectorAll('.story-section');
@@ -561,4 +570,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 50);
         }, 13000);
     }
+    
+    // 8. MOTOR DE REDIMENSIONAMENTO / ÁREA ÚTIL DINÂMICA
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            updateRealViewport();
+            if (typeof drawStrings === 'function') drawStrings();
+        }, 200); // debounce anti-lag
+    });
+
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            updateRealViewport();
+            if (typeof drawStrings === 'function') drawStrings();
+        }, 300); // tempo extra para o navegador assentar a tela antes do cálculo
+    });
 });

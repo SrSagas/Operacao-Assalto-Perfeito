@@ -19,7 +19,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&family=VT323&display=swap" rel="stylesheet">
 
     <!-- CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
@@ -44,16 +44,33 @@
         <!-- SEÇÃO 0: ABERTURA -->
         <section id="sec-0" class="story-section active fullscreen">
             <div class="container text-center">
-                <div class="terminal-text glitch-effect" data-text="ACESSANDO ARQUIVO CONFIDENCIAL">ACESSANDO ARQUIVO CONFIDENCIAL</div>
-                <div class="delay-show-1">
-                    <h1 class="title-main red-glow">OPERAÇÃO:<br>ASSALTO PERFEITO</h1>
-                    <div class="access-granted green-text blink">ACESSO AUTORIZADO</div>
+                
+                <!-- Sequência Hacker -->
+                <div id="hacking-sequence" class="hacking-container mono-text monitor-frame">
+                    <div class="crt-effect"></div>
+                    <p id="hack-msg-1" class="hack-line"></p>
+                    <p id="hack-msg-2" class="hack-line system-output"></p>
+                    <p id="hack-msg-3" class="hack-line"></p>
+                    <p id="hack-msg-4" class="hack-line system-output"></p>
+                    <p id="hack-msg-5" class="hack-line"></p>
+                    <p id="hack-msg-6" class="hack-line system-output"></p>
+                    <p id="hack-msg-7" class="hack-line system-output"></p>
+                    <p id="hack-msg-auth" class="hack-line green-text bold mt-4 blink" style="display: none; text-align: center;">[ ACESSO AUTORIZADO ]</p>
+                </div>
+
+                <!-- Conteúdo Principal (Oculto até terminar o hack) -->
+                <div id="main-title-container" style="display: none; opacity: 0; transition: opacity 2s ease; width: 100%;">
+                    <div class="terminal-text glitch-effect highlight-gold" data-text="ARQUIVO CONFIDENCIAL DESCRIPTOGRAFADO">ARQUIVO CONFIDENCIAL DESCRIPTOGRAFADO</div>
+                    <h1 class="title-main red-glow mt-4">
+                        <span class="title-top">OPERAÇÃO:</span>
+                        <span class="title-bottom">ASSALTO PERFEITO</span>
+                    </h1>
                     
-                    <div class="dali-mask-container delay-show-2">
+                    <div class="dali-mask-container delay-show-1">
                         <img src="assets/images/mascara-dali.png" alt="Máscara Dalí" class="dali-mask" onerror="this.style.display='none'">
                     </div>
 
-                    <button id="btn-enter" class="premium-btn delay-show-3">Entrar na Operação</button>
+                    <button id="btn-enter" class="premium-btn delay-show-2">Entrar na Operação</button>
                 </div>
             </div>
         </section>
@@ -156,7 +173,7 @@
                 
                 <div class="suspense-container">
                     <p class="dramatic-text reveal-1">O que a inteligência e vasta experiência de Vitor não previu...</p>
-                    <p class="dramatic-text reveal-2">Ele não buscava o Alvo. Ele se tornou Alvo.</p>
+                    <p class="dramatic-text reveal-2">Ele não buscava o Alvo. Ele tornou-se Alvo.</p>
                     
                     <div class="impact-reveal reveal-3">
                         Em um movimento perfeitamente calculado, Verônica tomou a iniciativa e puxou-o para si.
@@ -172,7 +189,10 @@
                             <li>O suposto "acompanhante" não era seu par.</li>
                             <li>A existência da pré conexão estabelecida meses antes no Tinder.</li>
                         </ul>
-                        <p class="conclusion">O plano não havia falhado. Ele estava apenas aguardando o momento perfeito.</p>
+                        <p class="conclusion mt-4 text-center">
+                            O plano não havia falhado.<br>
+                            Ele estava apenas aguardando o momento <span class="highlight-gold" style="font-size: 1.1em; text-transform: uppercase;">perfeito</span>.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -185,7 +205,7 @@
                 <div class="timeline">
                     <div class="timeline-item"><div class="dot"></div><div class="content"><strong>MISSÃO 01</strong><br>Match Encontrado</div></div>
                     <div class="timeline-item"><div class="dot"></div><div class="content"><strong>MISSÃO 02</strong><br>Instagram Trocado</div></div>
-                    <div class="timeline-item"><div class="dot"></div><div class="content"><strong>MISSÃO 03</strong><br>Caso Prematuramente Arquivado</div></div>
+                    <div class="timeline-item timeline-failed"><div class="dot"></div><div class="content"><strong>MISSÃO 03</strong><br>Caso Prematuramente Arquivado</div></div>
                     <div class="timeline-item"><div class="dot"></div><div class="content"><strong>MISSÃO 04</strong><br>A Festa</div></div>
                     <div class="timeline-item"><div class="dot"></div><div class="content"><strong>MISSÃO 05</strong><br>Primeiro Beijo</div></div>
                     <div class="timeline-item"><div class="dot"></div><div class="content"><strong>MISSÃO 06</strong><br>A Revelação do Plot</div></div>
@@ -200,9 +220,10 @@
         <!-- SEÇÃO 7: ARQUIVO DE EVIDÊNCIAS (Galeria) -->
         <section id="sec-7" class="story-section gallery-section investigation-board">
             <div class="container">
-                <h2 class="section-title">MURAL DE INVESTIGAÇÃO</h2>
-                <div id="gallery-grid" class="gallery-grid investigation-grid">
-                    <!-- Javascript will populate this -->
+                <h2 class="section-title" style="position: relative; z-index: 5;">MURAL DE INVESTIGAÇÃO</h2>
+                <div id="gallery-grid" class="gallery-grid" style="position: relative;">
+                    <svg id="string-svg" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1; overflow:visible;"></svg>
+                    <!-- Preenchido via JS -->
                 </div>
             </div>
         </section>
@@ -224,27 +245,10 @@
             </div>
         </section>
 
-        <!-- SEÇÃO 9: TRILHA SONORA DA OPERAÇÃO -->
-        <section id="sec-9" class="story-section player-section" style="display: none;">
-            <div class="container">
-                <h2 class="section-title">TRILHA SONORA DA OPERAÇÃO</h2>
-                <div class="music-player">
-                    <div class="cover-art">
-                        <img src="assets/images/capa-musica.png" alt="Capa" id="player-cover" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMjIyIi8+PC9zdmc+'">
-                    </div>
-                    <div class="player-controls">
-                        <div class="track-info">Nossa Música</div>
-                        <audio id="main-audio" controls>
-                            <source src="assets/audio/musica-casal.mp3" type="audio/mpeg">
-                        </audio>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- SEÇÃO 10: BERLIM -->
         <section id="sec-10" class="story-section berlin-section tactical-room">
             <div class="container">
+                <div class="audio-sync-placeholder" data-audio="berlim-filosofia.mp3" data-delay="1800"></div>
                 <div class="tactical-header">
                     <span class="coord-overlay mono-text">LAT:41.3879 N / LON:2.1699 E</span>
                     <h2 class="section-title">FILOSOFIA BERLIM</h2>
@@ -255,9 +259,9 @@
                     <div class="tactical-grid"></div>
                     <div class="tactical-circle-anim"></div>
                     
-                    <p class="quote-text">"A vida não deve ser medida pelo tempo em que o coração bate seguro dentro do peito, mas sim pela intensidade com que ele resolve acelerar."</p>
-                    <div class="quote-separator"></div>
-                    <p class="quote-subtext">Amar exige coragem. Exige pular de olhos vendados em um plano que pode dar errado. Mas a beleza não está na segurança do cofre; está em viver o presente, criar memórias indeléveis e rir na cara do perigo.</p>
+                    <p class="quote-text reveal-berlin">"A vida não deve ser medida pelo tempo em que o coração bate seguro dentro do peito, mas sim pela intensidade com que ele resolve acelerar."</p>
+                    <div class="quote-separator reveal-berlin"></div>
+                    <p class="quote-subtext reveal-berlin">Amar exige coragem. Exige pular de olhos vendados em um plano que pode dar errado. Mas a beleza não está na segurança do cofre; está em viver o presente, criar memórias indeléveis e rir na cara do perigo.</p>
                 </div>
             </div>
         </section>
@@ -266,16 +270,16 @@
         <section id="sec-11" class="story-section distance-section">
             <div class="container">
                 <h2 class="section-title">A OPERAÇÃO DISTÂNCIA</h2>
-                <div class="map-animation">
+                <div class="map-animation reveal-distance">
                     <div class="location fln">Florianópolis</div>
                     <div class="route-line"><div class="moving-dot"></div></div>
                     <div class="location gcr">Gov. Celso Ramos</div>
                 </div>
                 <div class="narrative-block text-center mt-4">
-                    <p class="highlight">"Ela mora longe demais."</p>
-                    <p>Antes era o principal obstáculo no planejamento tático...</p>
-                    <p class="highlight-gold mt-2">"Agora faço esse caminho todos os dias sem pensar duas vezes."</p>
-                    <p>A distância tornou-se apenas uma piada interna. Uma rota de fuga que leva exatamente para onde ambos sempre deveriam estar.</p>
+                    <p class="highlight reveal-distance">"Ela mora longe demais."</p>
+                    <p class="reveal-distance">Antes era o principal obstáculo no planejamento tático...</p>
+                    <p class="highlight-gold mt-2 reveal-distance">"Agora faço esse caminho todos os dias sem pensar duas vezes."</p>
+                    <p class="reveal-distance">A distância tornou-se apenas uma piada interna. Uma rota de fuga que leva exatamente para onde ambos sempre deveriam estar.</p>
                 </div>
             </div>
         </section>
@@ -283,13 +287,13 @@
         <!-- SEÇÃO 12: PRÓXIMAS TEMPORADAS -->
         <section id="sec-12" class="story-section future-section">
             <div class="container">
-                <h2 class="section-title">MISSÕES PENDENTES - PRÓXIMAS TEMPORADAS</h2>
+                <h2 class="section-title">MISSÕES PENDENTES<br><span style="font-size: 0.5em; color: var(--gray-text);">PRÓXIMAS TEMPORADAS</span></h2>
                 <ul class="mission-list">
-                    <li>[ ] Planejar novas rotas e viagens não rastreáveis.</li>
-                    <li>[ ] Infiltrar-se em novas maratonas de filmes e séries.</li>
-                    <li>[ ] Executar o roubo de novas conquistas e metas conjuntas.</li>
-                    <li>[ ] Fabricar novas memórias inestimáveis.</li>
-                    <li>[ ] Sobreviver juntos a todas as novas aventuras.</li>
+                    <li class="reveal-mission">[ ] Planejar novas rotas e viagens não rastreáveis.</li>
+                    <li class="reveal-mission">[ ] Infiltrar-se em novas maratonas de filmes e séries.</li>
+                    <li class="reveal-mission">[ ] Executar o roubo de novas conquistas e metas conjuntas.</li>
+                    <li class="reveal-mission">[ ] Fabricar novas memórias inestimáveis.</li>
+                    <li class="reveal-mission">[ ] Sobreviver juntos a todas as novas aventuras.</li>
                 </ul>
             </div>
         </section>
@@ -305,24 +309,63 @@
             </div>
         </section>
 
+        <!-- SEÇÃO 9: TRILHA SONORA DA OPERAÇÃO -->
+        <section id="sec-9" class="story-section player-section">
+            <div class="container">
+                <h2 class="section-title">TRILHA SONORA DA OPERAÇÃO</h2>
+                <div class="custom-music-player reveal-music">
+                    <div class="cover-art">
+                        <img src="assets/images/capa-musica.png" alt="Capa" id="player-cover" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMjIyIi8+PC9zdmc+'">
+                    </div>
+                    <div class="player-ui">
+                        <div class="track-info">Nossa Música</div>
+                        <audio id="main-audio">
+                            <source src="assets/audio/musica-casal.mp3" type="audio/mpeg">
+                        </audio>
+                        
+                        <div class="progress-container" id="progress-container">
+                            <div class="progress-bar" id="progress-bar"></div>
+                        </div>
+                        
+                        <div class="controls-row">
+                            <span id="current-time" class="mono-text">0:00</span>
+                            <button id="play-pause-btn" class="custom-play-btn">▶</button>
+                            <span id="total-time" class="mono-text">0:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- CRÉDITOS FINAIS -->
         <section id="sec-14" class="story-section credits-section">
-            <div class="container text-center">
-                <h2 class="gold-text">O MAIOR ASSALTO DA HISTÓRIA CONTINUA EM ANDAMENTO</h2>
-                <div class="credits-roll">
-                    <p><strong>Elenco Principal:</strong></p>
-                    <p>Vitor & Verônica</p>
-                    <p><strong>Direção Tática:</strong></p>
-                    <p>O Professor</p>
-                    <p><strong>Roteiro Original:</strong></p>
-                    <p>O Destino</p>
+            <div class="origami-bg"></div>
+            <div class="container text-center" style="z-index: 2;">
+                <h2 class="final-title reveal-final red-glow">O MAIOR ASSALTO DA HISTÓRIA<br><span class="gold-text">CONTINUA EM ANDAMENTO</span></h2>
+                
+                <div class="credits-roll reveal-final mt-4">
+                    <div class="credit-block">
+                        <span class="role">ELENCO PRINCIPAL</span>
+                        <span class="name">VITOR & VERÔNICA</span>
+                    </div>
+                    <div class="credit-block">
+                        <span class="role">DIREÇÃO TÁTICA</span>
+                        <span class="name">O PROFESSOR</span>
+                    </div>
+                    <div class="credit-block">
+                        <span class="role">ROTEIRO ORIGINAL</span>
+                        <span class="name">O DESTINO</span>
+                    </div>
                 </div>
-                <div class="live-counter-final mt-5">
-                    Tempo de operação ativa: <br>
-                    <span id="final-counter" class="mono-text gold-text"></span>
+
+                <div class="live-counter-final mt-5 reveal-final">
+                    <div class="timer-label">TEMPO DE OPERAÇÃO ATIVA</div>
+                    <div class="timer-box">
+                        <span id="final-counter" class="mono-text gold-text"></span>
+                    </div>
                 </div>
                 
-                <button id="btn-unlock" class="premium-btn mt-5">Modo Livre: Desbloquear Dossiê</button>
+                <button id="btn-unlock" class="premium-btn mt-5 reveal-final">MODO LIVRE: DESBLOQUEAR DOSSIÊ</button>
             </div>
         </section>
 
@@ -338,8 +381,6 @@
 
     <!-- UI Overlay para Controles Guiados -->
     <div id="gui-controls">
-        <button id="btn-pause" title="Pausar Experiência">❚❚</button>
-        <button id="btn-play" title="Retomar Experiência" style="display:none;">▶</button>
         <div class="scroll-hint">Arraste para Explorar</div>
     </div>
 
